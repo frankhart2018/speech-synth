@@ -67,6 +67,7 @@
                 </div>
             </div>
             <button type="submit">Test Voice</button>
+            <button type="button" id="reset">Reset Tests</button>
         </form>
     </div>
     <script>
@@ -81,25 +82,47 @@
         const rate = document.querySelector('#rate');
         const rateValue = document.querySelector('.rate-value');
 
+        const resetButton = document.getElementById("reset");
+
         let voices = [];
+
+        const localStoreKey = "voicesTested";
 
         function populateVoiceList() {
             voices = synth.getVoices();
 
+            const testedVoices = localStorage.getItem(localStoreKey);
+            let testedVoicesParsed = [];
+            if (testedVoices) {
+                testedVoicesParsed = JSON.parse(testedVoices);
+            }
+
             for (let i = 0; i < voices.length; i++) {
-                if (!voices[i].lang.includes("en")) continue;
+                if (!voices[i].lang.includes("en") || testedVoicesParsed.includes(voices[i].name)) continue;
 
                 const option = document.createElement('option');
                 option.textContent = voices[i].name + ' (' + voices[i].lang + ')';
-
-                if (voices[i].default) {
-                    option.textContent += ' -- DEFAULT';
-                }
 
                 option.setAttribute('data-lang', voices[i].lang);
                 option.setAttribute('data-name', voices[i].name);
                 voiceSelect.appendChild(option);
             }
+
+            for (let i = 0; i < voices.length; i++) {
+                if (!testedVoicesParsed.includes(voices[i].name)) continue;
+
+                const option = document.createElement('option');
+                option.textContent = voices[i].name + ' (' + voices[i].lang + ') (Tested)';
+
+                option.setAttribute('data-lang', voices[i].lang);
+                option.setAttribute('data-name', voices[i].name);
+                voiceSelect.appendChild(option);
+            }
+        }
+
+        resetButton.onclick = () => {
+            localStorage.removeItem(localStoreKey);
+            window.location.reload();
         }
 
         populateVoiceList();
@@ -109,6 +132,12 @@
 
         textForm.onsubmit = function (event) {
             event.preventDefault();
+
+            let testedVoices = [];
+            const testedVoicesLocalStore = localStorage.getItem(localStoreKey);
+            if (testedVoicesLocalStore) {
+                testedVoices = JSON.parse(testedVoicesLocalStore);
+            }
 
             const utterThis = new SpeechSynthesisUtterance("Hello World this is a test!");
             const selectedOption = voiceSelect.selectedOptions[0].getAttribute('data-name');
@@ -121,7 +150,12 @@
             utterThis.rate = rate.value;
             synth.speak(utterThis);
 
-            // textInput.blur();
+            utterThis.onend = () => {
+                testedVoices.push(utterThis.voice.name);
+                localStorage.setItem(localStoreKey, JSON.stringify(testedVoices));
+
+                window.location.reload();
+            }
         }
 
         rate.onchange = function () {
