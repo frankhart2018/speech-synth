@@ -69,9 +69,14 @@
             <button type="submit">Test Voice</button>
             <button type="button" id="reset">Reset Tests</button>
         </form>
+        <br />
+        <label id="best-voice"></label>
     </div>
     <script>
         const synth = window.speechSynthesis;
+
+        const localStoreKey = "voicesTested";
+        const bestVoiceLocalStoreKey = "bestVoice";
 
         const textForm = document.querySelector('form');
         const textInput = document.querySelector('.txt');
@@ -83,10 +88,11 @@
         const rateValue = document.querySelector('.rate-value');
 
         const resetButton = document.getElementById("reset");
+        const bestVoiceLabel = document.getElementById("best-voice");
+        bestVoiceLabel.innerHTML = `Best voice till now: ${localStorage.getItem(bestVoiceLocalStoreKey) !== null
+            ? localStorage.getItem(bestVoiceLocalStoreKey) : "NOT-FOUND"}`;
 
         let voices = [];
-
-        const localStoreKey = "voicesTested";
 
         function populateVoiceList() {
             voices = synth.getVoices();
@@ -122,6 +128,7 @@
 
         resetButton.onclick = () => {
             localStorage.removeItem(localStoreKey);
+            localStorage.removeItem(bestVoiceLocalStoreKey);
             window.location.reload();
         }
 
@@ -153,6 +160,11 @@
             utterThis.onend = () => {
                 testedVoices.push(utterThis.voice.name);
                 localStorage.setItem(localStoreKey, JSON.stringify(testedVoices));
+
+                const userResponse = confirm('Is this the best voice sample you heard till now?');
+                if (userResponse) {
+                    localStorage.setItem(bestVoiceLocalStoreKey, utterThis.voice.name);
+                }
 
                 window.location.reload();
             }
