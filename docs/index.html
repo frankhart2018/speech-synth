@@ -54,8 +54,6 @@
     <div class="container">
         <h1>Speech Synthesizer</h1>
         <form>
-            <label for="txt">Enter text to speak:</label>
-            <input id="txt" class="txt" type="text" placeholder="Type something...">
             <label for="voice">Select voice:</label>
             <select id="voice" name="voice"></select>
             <div class="rate-pitch">
@@ -68,7 +66,7 @@
                     <input type="range" id="pitch" min="0" max="2" value="1" step="0.1">
                 </div>
             </div>
-            <button type="submit">Speak</button>
+            <button type="submit">Test Voice</button>
         </form>
     </div>
     <script>
@@ -112,7 +110,7 @@
         textForm.onsubmit = function (event) {
             event.preventDefault();
 
-            const utterThis = new SpeechSynthesisUtterance(textInput.value);
+            const utterThis = new SpeechSynthesisUtterance("Hello World this is a test!");
             const selectedOption = voiceSelect.selectedOptions[0].getAttribute('data-name');
             for (let i = 0; i < voices.length; i++) {
                 if (voices[i].name === selectedOption) {
@@ -123,7 +121,7 @@
             utterThis.rate = rate.value;
             synth.speak(utterThis);
 
-            textInput.blur();
+            // textInput.blur();
         }
 
         rate.onchange = function () {
