@@ -70,6 +70,8 @@
             <button type="button" id="reset">Reset Tests</button>
         </form>
         <br />
+        <label id="total-tested"></label>
+        <br />
         <label id="best-voice"></label>
     </div>
     <script>
@@ -89,8 +91,13 @@
 
         const resetButton = document.getElementById("reset");
         const bestVoiceLabel = document.getElementById("best-voice");
+        const totalTestedLabel = document.getElementById("total-tested");
+
         bestVoiceLabel.innerHTML = `Best voice till now: ${localStorage.getItem(bestVoiceLocalStoreKey) !== null
             ? localStorage.getItem(bestVoiceLocalStoreKey) : "NOT-FOUND"}`;
+
+        totalTestedLabel.innerHTML = `Total tested: ${localStorage.getItem(localStoreKey) !== null
+            ? JSON.parse(localStorage.getItem(localStoreKey)).length : "0"}`;
 
         let voices = [];
 
