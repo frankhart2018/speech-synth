@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Speech Synthesizer</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+        }
+
+        .container {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .txt {
+            width: 100%;
+            padding: 0.5rem;
+        }
+
+        select {
+            width: 100%;
+            padding: 0.5rem;
+        }
+
+        .rate-pitch {
+            display: flex;
+            justify-content: space-between;
+            gap: 1rem;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Speech Synthesizer</h1>
+        <form>
+            <label for="txt">Enter text to speak:</label>
+            <input id="txt" class="txt" type="text" placeholder="Type something...">
+            <label for="voice">Select voice:</label>
+            <select id="voice" name="voice"></select>
+            <div class="rate-pitch">
+                <div>
+                    <label for="rate">Rate: <span class="rate-value">1</span></label>
+                    <input type="range" id="rate" min="0.5" max="2" value="1" step="0.1">
+                </div>
+                <div>
+                    <label for="pitch">Pitch: <span class="pitch-value">1</span></label>
+                    <input type="range" id="pitch" min="0" max="2" value="1" step="0.1">
+                </div>
+            </div>
+            <button type="submit">Speak</button>
+        </form>
+    </div>
+    <script>
+        const synth = window.speechSynthesis;
+
+        const textForm = document.querySelector('form');
+        const textInput = document.querySelector('.txt');
+        const voiceSelect = document.querySelector('select');
+
+        const pitch = document.querySelector('#pitch');
+        const pitchValue = document.querySelector('.pitch-value');
+        const rate = document.querySelector('#rate');
+        const rateValue = document.querySelector('.rate-value');
+
+        let voices = [];
+
+        function populateVoiceList() {
+            voices = synth.getVoices();
+
+            for (let i = 0; i < voices.length; i++) {
+                if (!voices[i].lang.includes("en")) continue;
+
+                const option = document.createElement('option');
+                option.textContent = voices[i].name + ' (' + voices[i].lang + ')';
+
+                if (voices[i].default) {
+                    option.textContent += ' -- DEFAULT';
+                }
+
+                option.setAttribute('data-lang', voices[i].lang);
+                option.setAttribute('data-name', voices[i].name);
+                voiceSelect.appendChild(option);
+            }
+        }
+
+        populateVoiceList();
+        if (speechSynthesis.onvoiceschanged !== undefined) {
+            speechSynthesis.onvoiceschanged = populateVoiceList;
+        }
+
+        textForm.onsubmit = function (event) {
+            event.preventDefault();
+
+            const utterThis = new SpeechSynthesisUtterance(textInput.value);
+            const selectedOption = voiceSelect.selectedOptions[0].getAttribute('data-name');
+            for (let i = 0; i < voices.length; i++) {
+                if (voices[i].name === selectedOption) {
+                    utterThis.voice = voices[i];
+                }
+            }
+            utterThis.pitch = pitch.value;
+            utterThis.rate = rate.value;
+            synth.speak(utterThis);
+
+            textInput.blur();
+        }
+
+        rate.onchange = function () {
+            rateValue.textContent = rate.value;
+        }
+
+        pitch.onchange = function () {
+            pitchValue.textContent = pitch.value;
+        }
+    </script>
+</body>
+
+</html>
